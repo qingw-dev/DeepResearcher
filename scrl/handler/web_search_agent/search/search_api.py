@@ -56,20 +56,19 @@ def serper_google_search(
         depth=0
     ):
     try:
-        conn = http.client.HTTPSConnection("google.serper.dev")
-        payload = json.dumps({
-                "q": query,
-                "num": top_k,
-                "gl": region,
-                "hl": lang,
-            })
+        url = "https://google.serper.dev/search"
         headers = {
             'X-API-KEY': serper_api_key,
             'Content-Type': 'application/json'
         }
-        conn.request("POST", "/search", payload, headers)
-        res = conn.getresponse()
-        data = json.loads(res.read().decode("utf-8"))
+        payload = json.dumps({
+            "q": query,
+            "num": top_k,
+            "gl": region,
+            "hl": lang,
+        })
+        response = requests.request("POST", url, headers=headers, data=payload)
+        data = json.loads(response.text)
 
         if not data:
             raise Exception("The google search API is temporarily unavailable, please try again later.")
@@ -81,10 +80,7 @@ def serper_google_search(
             print("search success")
             return results
     except Exception as e:
-        # print(f"Serper search API error: {e}")
-        if depth < 512:
-            time.sleep(1)
-            return serper_google_search(query, serper_api_key, top_k, region, lang, depth=depth+1)
+        print(f"Serper search API error: {e}")
     print("search failed")
     return []
 
